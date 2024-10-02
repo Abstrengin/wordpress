@@ -1,0 +1,71 @@
+/**
+ *  REDIRECT USER AFTER LOGIN
+ */
+function custom_login_redirect() {
+    return home_url();
+}
+add_filter('login_redirect', 'custom_login_redirect');
+
+
+/**
+ *  REDIRECT USER IF NOT LOGGED IN FOR RESTRICTED CONTENT
+ */
+function ae_content_restriction() {
+    global $post;
+    $ae_post_ids = array(6711,6725,6734);
+    if ( !is_user_logged_in() && in_array((int)$post->ID, $ae_post_ids) ) {
+        wp_redirect( site_url( '/content-restriction' ) ); 
+        exit;
+        }
+    }
+add_action( 'template_redirect', 'ae_content_restriction' );
+
+
+/**
+ *  DISPLAY POST UPDATED
+ */
+
+function ae_post_updated() {
+    $u_time = get_the_time('U');
+    $u_modified_time = get_the_modified_time('U');
+    if ($u_modified_time >= $u_time + 86400) {
+      echo "Updated on: ";
+      the_modified_time('F jS, Y');
+    }
+}
+
+
+/**
+ *  ADD PILL BADGE TO CARDS DEPENDING ON CATEGORY IN CONJUNTION WITH BOOTSTRAP
+ */
+function ae_pill_badge_by_category() {
+    if ( get_post_type( get_the_ID() ) === 'podcast' ) {
+        ?><div class="position-absolute bottom-0 end-0 me-3 mb-3"><i class="fa-solid fa-podcast"></i></div><?php
+    } elseif ( has_block( 'embed' ) ) {
+        ?><div class="position-absolute bottom-0 end-0 me-3 mb-3"><i class="fa-solid fa-video"></i> <i class="fa-solid fa-newspaper"></i></div><?php
+    } elseif ( in_category( 'read' ) ) {
+        ?><div class="position-absolute bottom-0 end-0 me-3 mb-3"><i class="fa-solid fa-newspaper"></i></div><?php
+    } else {
+        ?><div class="position-absolute bottom-0 end-0 me-3 mb-3"><i class="fa-solid fa-video"></i> <i class="fa-solid fa-newspaper"></i></div><?php
+    }
+}
+
+
+/*
+ *  USER CAN LOG IN, LOG OUT, RESGISTER
+ */
+function ae_user_management() {
+    if( is_user_logged_in() ) {
+        global $current_user;
+        get_currentuserinfo();
+        echo '<span class="ae-text-very-light">Hello, '. $current_user->display_name . '</span>';
+        echo '<hr class="ae-text-very-light my-2">';
+        echo '<p class="m-0"><a class="link-light" href="/wp-admin/profile.php">Manage Account</a></p>';
+        echo '<p class="m-0"><a class="link-light" href="/wp-login.php?action=logout">Logout</a></p>';
+    } else {
+        echo '<span class="ae-text-very-light">Hello, Fellow Gamer</span>';
+        echo '<hr class="ae-text-very-light my-2">';
+        echo '<p class="m-0"><a class="link-light" href="/wp-login.php?action=login">Login</a></p>';
+        echo '<p class="m-0"><a class="link-light" href="/wp-login.php?action=register">Register</a></p>';
+    }
+}
